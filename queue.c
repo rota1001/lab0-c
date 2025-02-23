@@ -26,7 +26,7 @@ struct list_head *q_new()
 /* Delete an entry from queue
  * @entry should be a valid pointer to element_t
  */
-void q_delete_entry(element_t *entry)
+static void q_delete_entry(element_t *entry)
 {
     list_del(&entry->list);
     if (entry->value)
