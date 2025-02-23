@@ -190,8 +190,8 @@ static struct list_head *q_merge_two(struct list_head *head1,
 /* Sort elements of queue in ascending/descending order */
 void q_sort(struct list_head *head, bool descend)
 {
-    struct list_head *stack[35], *node, *safe;
-    unsigned int size[35];
+    struct list_head *stack[31], *node, *safe;
+    unsigned int bit = 0;
     if (!head || list_empty(head))
         return;
 
@@ -199,12 +199,9 @@ void q_sort(struct list_head *head, bool descend)
     list_for_each_safe (node, safe, head) {
         node->next = NULL;
         stack[sp++] = node;
-        size[sp - 1] = 1;
-        while ((sp > 1) && (size[sp - 1] == size[sp - 2])) {
+        for (unsigned int i = 1; (sp > 1) && (bit & i); i <<= 1, sp--)
             stack[sp - 2] = q_merge_two(stack[sp - 1], stack[sp - 2], descend);
-            size[sp - 2] <<= 1;
-            sp--;
-        }
+        bit++;
     }
 
     while ((sp--) > 1)
