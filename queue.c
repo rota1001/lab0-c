@@ -168,19 +168,13 @@ void q_reverse(struct list_head *head)
 
     struct list_head *node, *safe;
     list_for_each_safe (node, safe, head) {
-        *(uintptr_t *) &node->prev =
-            (uintptr_t) node->next ^ (uintptr_t) node->prev;
-        *(uintptr_t *) &node->next =
-            (uintptr_t) node->next ^ (uintptr_t) node->prev;
-        *(uintptr_t *) &node->prev =
-            (uintptr_t) node->next ^ (uintptr_t) node->prev;
+        *(uintptr_t *) &node->prev ^= (uintptr_t) node->next;
+        *(uintptr_t *) &node->next ^= (uintptr_t) node->prev;
+        *(uintptr_t *) &node->prev ^= (uintptr_t) node->next;
     }
-    *(uintptr_t *) &head->prev =
-        (uintptr_t) head->next ^ (uintptr_t) head->prev;
-    *(uintptr_t *) &head->next =
-        (uintptr_t) head->next ^ (uintptr_t) head->prev;
-    *(uintptr_t *) &head->prev =
-        (uintptr_t) head->next ^ (uintptr_t) head->prev;
+    *(uintptr_t *) &head->prev ^= (uintptr_t) head->next;
+    *(uintptr_t *) &head->next ^= (uintptr_t) head->prev;
+    *(uintptr_t *) &head->prev ^= (uintptr_t) head->next;
 }
 
 /* Reverse the nodes of the list k at a time */
