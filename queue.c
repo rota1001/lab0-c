@@ -23,6 +23,17 @@ struct list_head *q_new()
     return head;
 }
 
+/* Delete an entry from queue
+ * @entry should be a valid pointer to element_t
+ */
+void q_delete_entry(element_t *entry)
+{
+    list_del(&entry->list);
+    if (entry->value)
+        free(entry->value);
+    free(entry);
+}
+
 /* Free all storage used by queue */
 void q_free(struct list_head *head)
 {
@@ -35,14 +46,9 @@ void q_free(struct list_head *head)
     }
 
     element_t *entry = NULL, *safe = NULL;
-
-    list_for_each_entry_safe (entry, safe, head, list) {
-        list_del(&entry->list);
-        if (entry->value)
-            free(entry->value);
-        free(entry);
-    }
-
+    /* cppcheck-suppress unknownMacro */
+    list_for_each_entry_safe (entry, safe, head, list)
+        q_delete_entry(entry);
     free(head);
 }
 
@@ -128,11 +134,7 @@ bool q_delete_mid(struct list_head *head)
         right = right->prev;
     }
 
-    list_del(left);
-    element_t *entry = list_entry(left, element_t, list);
-    if (entry->value)
-        free(entry->value);
-    free(entry);
+    q_delete_entry(list_entry(left, element_t, list));
 
     return true;
 }
