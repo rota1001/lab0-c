@@ -202,6 +202,44 @@ int q_descend(struct list_head *head)
     return 0;
 }
 
+/* Merge head2 to head1
+ * They must be valid heads
+ */
+static int q_merge_two(struct list_head *head1,
+                       struct list_head *head2,
+                       bool descend)
+{
+    struct list_head *head = head1, *it1 = head1->next, *it2 = head2->next;
+    int cnt = 0;
+    while ((it1 != head1) && (it2 != head2)) {
+        char *str1, *str2;
+        str1 = list_entry(it1, element_t, list)->value;
+        str2 = list_entry(it2, element_t, list)->value;
+        struct list_head **it =
+            (((strcmp(str1, str2)) < 0) ^ descend) ? (&it1) : (&it2);
+        *it = (*it)->next;
+
+        list_move((*it)->prev, head);
+        head = head->next;
+        cnt++;
+    }
+    if (it1 == head1) {
+        it1 = it2;
+        head1 = head2;
+    }
+    if (!it1)
+        return cnt;
+
+    while (it1 != head1) {
+        it1 = it1->next;
+        list_move(it1->prev, head);
+        head = head->next;
+        cnt++;
+    }
+
+    return cnt;
+}
+
 /* Merge all the queues into one sorted queue, which is in ascending/descending
  * order */
 int q_merge(struct list_head *head, bool descend)
