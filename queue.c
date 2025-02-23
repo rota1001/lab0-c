@@ -183,8 +183,38 @@ void q_reverseK(struct list_head *head, int k)
     // https://leetcode.com/problems/reverse-nodes-in-k-group/
 }
 
+static struct list_head *q_merge_two(struct list_head *head1,
+                                     struct list_head *head2,
+                                     bool descend);
+
 /* Sort elements of queue in ascending/descending order */
-void q_sort(struct list_head *head, bool descend) {}
+void q_sort(struct list_head *head, bool descend)
+{
+    struct list_head *stack[35], *node, *safe;
+    unsigned int size[35];
+    if (!head || list_empty(head))
+        return;
+
+    int sp = 0;
+    list_for_each_safe (node, safe, head) {
+        node->next = NULL;
+        stack[sp++] = node;
+        size[sp - 1] = 1;
+        while ((sp > 1) && (size[sp - 1] == size[sp - 2])) {
+            stack[sp - 2] = q_merge_two(stack[sp - 1], stack[sp - 2], descend);
+            size[sp - 2] <<= 1;
+            sp--;
+        }
+    }
+
+    while ((sp--) > 1)
+        stack[sp - 1] = q_merge_two(stack[sp], stack[sp - 1], descend);
+
+    INIT_LIST_HEAD(head);
+    for (node = stack[0], safe = node->next;
+         (node) && ((safe = node->next) || 1); node = safe)
+        list_add_tail(node, head);
+}
 
 /* Remove every node which has a node with a strictly less value anywhere to
  * the right side of it */
