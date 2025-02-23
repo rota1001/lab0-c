@@ -203,41 +203,37 @@ int q_descend(struct list_head *head)
 }
 
 /* Merge head2 to head1
- * They must be valid heads
+ * They must be two list without head,
+ * and the next of the last node must be NULL
  */
-static int q_merge_two(struct list_head *head1,
-                       struct list_head *head2,
-                       bool descend)
+static struct list_head *q_merge_two(struct list_head *head1,
+                                     struct list_head *head2,
+                                     bool descend)
 {
-    struct list_head *head = head1, *it1 = head1->next, *it2 = head2->next;
-    int cnt = 0;
-    while ((it1 != head1) && (it2 != head2)) {
+    if (!head1 && !head2)
+        return NULL;
+
+    LIST_HEAD(head);
+    while (head1 && head2) {
         char *str1, *str2;
-        str1 = list_entry(it1, element_t, list)->value;
-        str2 = list_entry(it2, element_t, list)->value;
+        str1 = list_entry(head1, element_t, list)->value;
+        str2 = list_entry(head2, element_t, list)->value;
         struct list_head **it =
-            (((strcmp(str1, str2)) < 0) ^ descend) ? (&it1) : (&it2);
-        *it = (*it)->next;
-
-        list_move((*it)->prev, head);
-        head = head->next;
-        cnt++;
-    }
-    if (it1 == head1) {
-        it1 = it2;
-        head1 = head2;
-    }
-    if (!it1)
-        return cnt;
-
-    while (it1 != head1) {
-        it1 = it1->next;
-        list_move(it1->prev, head);
-        head = head->next;
-        cnt++;
+            (((strcmp(str1, str2)) < 0) ^ descend) ? (&head1) : (&head2);
+        struct list_head *safe = (*it)->next;
+        list_add_tail(*it, &head);
+        *it = safe;
     }
 
-    return cnt;
+    *(uintptr_t *) &head1 ^= (uintptr_t) head2;
+    while (head1) {
+        struct list_head *safe = head1->next;
+        list_add_tail(head1, &head);
+        head1 = safe;
+    }
+
+    head.prev->next = NULL;
+    return head.next;
 }
 
 /* Merge all the queues into one sorted queue, which is in ascending/descending
