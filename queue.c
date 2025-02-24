@@ -237,8 +237,25 @@ int q_ascend(struct list_head *head)
  * the right side of it */
 int q_descend(struct list_head *head)
 {
-    // https://leetcode.com/problems/remove-nodes-from-linked-list/
-    return 0;
+    const char *greatest = NULL;
+    struct list_head *node, *safe;
+    int cnt = 0;
+
+    if (!head || list_empty(head))
+        return 0;
+
+    for (node = head->prev, safe = node->prev; node != head;
+         node = safe, safe = node->prev) {
+        element_t *entry = list_entry(node, element_t, list);
+        if (!greatest || strcmp(entry->value, greatest) >= 0) {
+            cnt++;
+            greatest = entry->value;
+            continue;
+        }
+        q_delete_entry(entry);
+    }
+
+    return cnt;
 }
 
 /* Merge head2 to head1
