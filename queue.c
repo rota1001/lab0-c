@@ -41,12 +41,7 @@ void q_free(struct list_head *head)
     if (!head)
         return;
 
-    if (list_empty(head)) {
-        free(head);
-        return;
-    }
-
-    element_t *entry = NULL, *safe = NULL;
+    element_t *entry, *safe;
     /* cppcheck-suppress unknownMacro */
     list_for_each_entry_safe (entry, safe, head, list)
         q_delete_entry(entry);
