@@ -231,17 +231,11 @@ void q_sort(struct list_head *head, bool descend)
         list_add_tail(node, head);
 }
 
-/* Remove every node which has a node with a strictly less value anywhere to
- * the right side of it */
-int q_ascend(struct list_head *head)
-{
-    // https://leetcode.com/problems/remove-nodes-from-linked-list/
-    return 0;
-}
-
-/* Remove every node which has a node with a strictly greater value anywhere to
- * the right side of it */
-int q_descend(struct list_head *head)
+/*  Remove every node which has a node with a strictly less or greater value
+ *  anywhere to the right side of it.
+ *  @descend represent if it is descend.
+ */
+static int q_ascend_descend(struct list_head *head, bool descend)
 {
     const char *greatest = NULL;
     struct list_head *node, *safe;
@@ -253,7 +247,8 @@ int q_descend(struct list_head *head)
     for (node = head->prev, safe = node->prev; node != head;
          node = safe, safe = node->prev) {
         element_t *entry = list_entry(node, element_t, list);
-        if (!greatest || strcmp(entry->value, greatest) >= 0) {
+        if (!greatest ||
+            ((strcmp(entry->value, greatest) ^ -descend) + descend <= 0)) {
             cnt++;
             greatest = entry->value;
             continue;
@@ -262,6 +257,20 @@ int q_descend(struct list_head *head)
     }
 
     return cnt;
+}
+
+/* Remove every node which has a node with a strictly less value anywhere to
+ * the right side of it */
+int q_ascend(struct list_head *head)
+{
+    return q_ascend_descend(head, 0);
+}
+
+/* Remove every node which has a node with a strictly greater value anywhere to
+ * the right side of it */
+int q_descend(struct list_head *head)
+{
+    return q_ascend_descend(head, 1);
 }
 
 /* Merge head2 to head1
