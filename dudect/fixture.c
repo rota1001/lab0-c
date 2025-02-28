@@ -85,10 +85,14 @@ int cmp(const void *x, const void *y)
     return *(int64_t *) x - *(int64_t *) y;
 }
 
-void prepare_percentiles(int64_t *p, int64_t *exec_times)
+void prepare_percentiles(int64_t *p, int64_t *exec_times, uint8_t *classes)
 {
-    qsort(exec_times, N_MEASURES, sizeof(int64_t), cmp);
-    *p = exec_times[N_MEASURES >> 1];
+    int64_t tmp[N_MEASURES], cnt = 0;
+    for (int i = 0; i < N_MEASURES; i++)
+        if (classes[i] && (tmp[cnt++] = exec_times[i]))
+            ;
+    qsort(tmp, cnt, sizeof(int64_t), cmp);
+    *p = tmp[cnt >> 1];
 }
 
 static bool report(void)
@@ -150,7 +154,7 @@ static bool doit(int mode)
     differentiate(exec_times, before_ticks, after_ticks);
 
     if (!percentiles)
-        prepare_percentiles(&percentiles, exec_times);
+        prepare_percentiles(&percentiles, exec_times, classes);
 
     update_statistics(exec_times, classes, percentiles);
     ret &= report();
