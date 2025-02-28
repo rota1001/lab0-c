@@ -64,7 +64,9 @@ static void differentiate(int64_t *exec_times,
         exec_times[i] = after_ticks[i] - before_ticks[i];
 }
 
-static void update_statistics(const int64_t *exec_times, uint8_t *classes)
+static void update_statistics(const int64_t *exec_times,
+                              uint8_t *classes,
+                              int64_t percentiles)
 {
     for (size_t i = 0; i < N_MEASURES; i++) {
         int64_t difference = exec_times[i];
@@ -73,8 +75,20 @@ static void update_statistics(const int64_t *exec_times, uint8_t *classes)
             continue;
 
         /* do a t-test on the execution time */
-        t_push(t, difference, classes[i]);
+        if (difference < percentiles)
+            t_push(t, difference, classes[i]);
     }
+}
+
+int cmp(const void *x, const void *y)
+{
+    return *(int64_t *) x - *(int64_t *) y;
+}
+
+void prepare_percentiles(int64_t *p, int64_t *exec_times)
+{
+    qsort(exec_times, N_MEASURES, sizeof(int64_t), cmp);
+    *p = exec_times[N_MEASURES >> 1];
 }
 
 static bool report(void)
@@ -123,6 +137,7 @@ static bool doit(int mode)
     int64_t *exec_times = calloc(N_MEASURES, sizeof(int64_t));
     uint8_t *classes = calloc(N_MEASURES, sizeof(uint8_t));
     uint8_t *input_data = calloc(N_MEASURES * CHUNK_SIZE, sizeof(uint8_t));
+    int64_t percentiles = 0;
 
     if (!before_ticks || !after_ticks || !exec_times || !classes ||
         !input_data) {
@@ -133,7 +148,11 @@ static bool doit(int mode)
 
     bool ret = measure(before_ticks, after_ticks, input_data, mode);
     differentiate(exec_times, before_ticks, after_ticks);
-    update_statistics(exec_times, classes);
+
+    if (!percentiles)
+        prepare_percentiles(&percentiles, exec_times);
+
+    update_statistics(exec_times, classes, percentiles);
     ret &= report();
 
     free(before_ticks);
@@ -159,8 +178,7 @@ static bool test_const(char *text, int mode)
     for (int cnt = 0; cnt < TEST_TRIES; ++cnt) {
         printf("Testing %s...(%d/%d)\n\n", text, cnt, TEST_TRIES);
         init_once();
-        for (int i = 0; i < ENOUGH_MEASURE / (N_MEASURES - DROP_SIZE * 2) + 1;
-             ++i)
+        for (int i = 0; t->n[0] + t->n[1] < ENOUGH_MEASURE; ++i)
             result = doit(mode);
         printf("\033[A\033[2K\033[A\033[2K");
         if (result)
@@ -170,8 +188,11 @@ static bool test_const(char *text, int mode)
     return result;
 }
 
-#define DUT_FUNC_IMPL(op) \
-    bool is_##op##_const(void) { return test_const(#op, DUT(op)); }
+#define DUT_FUNC_IMPL(op)                \
+    bool is_##op##_const(void)           \
+    {                                    \
+        return test_const(#op, DUT(op)); \
+    }
 
 #define _(x) DUT_FUNC_IMPL(x)
 DUT_FUNCS
