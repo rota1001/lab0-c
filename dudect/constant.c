@@ -80,9 +80,8 @@ bool measure(int64_t *before_ticks,
         for (size_t i = DROP_SIZE; i < N_MEASURES - DROP_SIZE; i++) {
             char *s = get_random_string();
             dut_new();
-            dut_insert_head(
-                get_random_string(),
-                *(uint16_t *) (input_data + i * CHUNK_SIZE) % 10000);
+            dut_insert_head(get_random_string(),
+                            *(uint16_t *) (input_data + i * CHUNK_SIZE) % 1000);
             int before_size = q_size(l);
             before_ticks[i] = cpucycles();
             dut_insert_head(s, 1);
@@ -97,9 +96,8 @@ bool measure(int64_t *before_ticks,
         for (size_t i = DROP_SIZE; i < N_MEASURES - DROP_SIZE; i++) {
             char *s = get_random_string();
             dut_new();
-            dut_insert_head(
-                get_random_string(),
-                *(uint16_t *) (input_data + i * CHUNK_SIZE) % 10000);
+            dut_insert_head(get_random_string(),
+                            *(uint16_t *) (input_data + i * CHUNK_SIZE) % 1000);
             int before_size = q_size(l);
             before_ticks[i] = cpucycles();
             dut_insert_tail(s, 1);
@@ -115,7 +113,7 @@ bool measure(int64_t *before_ticks,
             dut_new();
             dut_insert_head(
                 get_random_string(),
-                *(uint16_t *) (input_data + i * CHUNK_SIZE) % 10000 + 1);
+                *(uint16_t *) (input_data + i * CHUNK_SIZE) % 1000 + 1);
             int before_size = q_size(l);
             before_ticks[i] = cpucycles();
             element_t *e = q_remove_head(l, NULL, 0);
@@ -133,7 +131,7 @@ bool measure(int64_t *before_ticks,
             dut_new();
             dut_insert_head(
                 get_random_string(),
-                *(uint16_t *) (input_data + i * CHUNK_SIZE) % 10000 + 1);
+                *(uint16_t *) (input_data + i * CHUNK_SIZE) % 1000 + 1);
             int before_size = q_size(l);
             before_ticks[i] = cpucycles();
             element_t *e = q_remove_tail(l, NULL, 0);
