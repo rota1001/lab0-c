@@ -216,21 +216,17 @@ void q_sort(struct list_head *head, bool descend)
         node->prev = sp;
         sp = node;
         for (unsigned int i = 1; sp->prev && (bit & i); i <<= 1) {
-            struct list_head *a = sp;
-            sp = sp->prev->prev;
-            a = q_merge_two(a, a->prev, descend);
-            a->prev = sp;
-            sp = a;
+            struct list_head *a = sp->prev;
+            sp->prev = a->prev;
+            sp = q_merge_two(sp, a, descend);
         }
         bit++;
     }
 
     while (sp->prev) {
-        struct list_head *a = sp;
-        sp = sp->prev->prev;
-        a = q_merge_two(a, a->prev, descend);
-        a->prev = sp;
-        sp = a;
+        struct list_head *a = sp->prev;
+        sp->prev = a->prev;
+        sp = q_merge_two(sp, a, descend);
     }
 
     INIT_LIST_HEAD(head);
