@@ -289,10 +289,7 @@ static struct list_head *q_merge_two(struct list_head *head1,
                                      struct list_head *head2,
                                      bool descend)
 {
-    if (!head1 && !head2)
-        return NULL;
-
-    LIST_HEAD(head);
+    struct list_head *head = NULL, **indir = &head;
     while (head1 && head2) {
         char *str1, *str2;
         str1 = list_entry(head1, element_t, list)->value;
@@ -300,19 +297,21 @@ static struct list_head *q_merge_two(struct list_head *head1,
         struct list_head **it =
             (((strcmp(str1, str2)) < 0) ^ descend) ? (&head1) : (&head2);
         struct list_head *safe = (*it)->next;
-        list_add_tail(*it, &head);
+        *indir = *it;
+        indir = &(*indir)->next;
         *it = safe;
     }
 
     *(uintptr_t *) &head1 ^= (uintptr_t) head2;
     while (head1) {
         struct list_head *safe = head1->next;
-        list_add_tail(head1, &head);
+        *indir = head1;
+        indir = &(*indir)->next;
         head1 = safe;
     }
+    *indir = NULL;
 
-    head.prev->next = NULL;
-    return head.next;
+    return head;
 }
 
 /* Merge all the queues into one sorted queue, which is in ascending/descending
