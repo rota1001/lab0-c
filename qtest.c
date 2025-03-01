@@ -19,9 +19,19 @@
 #include <time.h>
 #endif
 
+#include "dudect/cpucycles.h"
 #include "dudect/fixture.h"
 #include "list.h"
 #include "random.h"
+
+#define PERFTEST(func, ...)  \
+    ({                       \
+        int64_t start, end;  \
+        start = cpucycles(); \
+        func(__VA_ARGS__);   \
+        end = cpucycles();   \
+        end - start;         \
+    })
 
 /* Shannon entropy */
 extern double shannon_entropy(const uint8_t *input_data);
