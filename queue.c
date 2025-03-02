@@ -292,26 +292,29 @@ static struct list_head *q_merge_two(struct list_head *head1,
                                      bool descend)
 {
     struct list_head *head = NULL, **indir = &head;
-    while (head1 && head2) {
-        char *str1, *str2;
+    for (;;) {
+        if (!head1) {
+            *indir = head2;
+            break;
+        }
+        if (!head2) {
+            *indir = head1;
+            break;
+        }
+        const char *str1, *str2;
         str1 = list_entry(head1, element_t, list)->value;
         str2 = list_entry(head2, element_t, list)->value;
-        struct list_head **it =
-            (((strcmp(str1, str2)) < 0) ^ descend) ? (&head1) : (&head2);
-        struct list_head *safe = (*it)->next;
-        *indir = *it;
-        indir = &(*indir)->next;
-        *it = safe;
-    }
 
-    *(uintptr_t *) &head1 ^= (uintptr_t) head2;
-    while (head1) {
-        struct list_head *safe = head1->next;
-        *indir = head1;
-        indir = &(*indir)->next;
-        head1 = safe;
+        if (((strcmp(str1, str2)) < 0) ^ descend) {
+            *indir = head1;
+            indir = &(*indir)->next;
+            head1 = head1->next;
+        } else {
+            *indir = head2;
+            indir = &(*indir)->next;
+            head2 = head2->next;
+        }
     }
-    *indir = NULL;
 
     return head;
 }
