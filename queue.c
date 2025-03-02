@@ -207,20 +207,26 @@ static struct list_head *q_merge_two(struct list_head *head1,
 void q_sort(struct list_head *head, bool descend)
 {
     struct list_head *sp = NULL, *node, *safe;
-    unsigned int bit = 0;
+    unsigned int count = 0;
     if (!head || list_empty(head))
         return;
 
     list_for_each_safe (node, safe, head) {
+        struct list_head **tail = &sp;
+        unsigned int bits = count;
+        for (; bits & 1; bits >>= 1)
+            tail = &(*tail)->prev;
+
+        if (bits) {
+            struct list_head *a = (*tail)->prev;
+            (*tail)->prev = a->prev;
+            *tail = q_merge_two(*tail, a, descend);
+        }
+
         node->next = NULL;
         node->prev = sp;
         sp = node;
-        for (unsigned int i = 1; sp->prev && (bit & i); i <<= 1) {
-            struct list_head *a = sp->prev;
-            sp->prev = a->prev;
-            sp = q_merge_two(sp, a, descend);
-        }
-        bit++;
+        count++;
     }
 
     while (sp->prev) {
