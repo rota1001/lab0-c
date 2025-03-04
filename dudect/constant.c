@@ -77,7 +77,7 @@ bool measure(int64_t *before_ticks,
 
     switch (mode) {
     case DUT(insert_head):
-        for (size_t i = DROP_SIZE; i < N_MEASURES - DROP_SIZE; i++) {
+        for (size_t i = 0; i < N_MEASURES; i++) {
             char *s = get_random_string();
             dut_new();
             dut_insert_head(get_random_string(),
@@ -93,7 +93,7 @@ bool measure(int64_t *before_ticks,
         }
         break;
     case DUT(insert_tail):
-        for (size_t i = DROP_SIZE; i < N_MEASURES - DROP_SIZE; i++) {
+        for (size_t i = 0; i < N_MEASURES; i++) {
             char *s = get_random_string();
             dut_new();
             dut_insert_head(get_random_string(),
@@ -109,7 +109,7 @@ bool measure(int64_t *before_ticks,
         }
         break;
     case DUT(remove_head):
-        for (size_t i = DROP_SIZE; i < N_MEASURES - DROP_SIZE; i++) {
+        for (size_t i = 0; i < N_MEASURES; i++) {
             dut_new();
             dut_insert_head(
                 get_random_string(),
@@ -127,7 +127,7 @@ bool measure(int64_t *before_ticks,
         }
         break;
     case DUT(remove_tail):
-        for (size_t i = DROP_SIZE; i < N_MEASURES - DROP_SIZE; i++) {
+        for (size_t i = 0; i < N_MEASURES; i++) {
             dut_new();
             dut_insert_head(
                 get_random_string(),
@@ -145,7 +145,7 @@ bool measure(int64_t *before_ticks,
         }
         break;
     default:
-        for (size_t i = DROP_SIZE; i < N_MEASURES - DROP_SIZE; i++) {
+        for (size_t i = 0; i < N_MEASURES; i++) {
             dut_new();
             dut_insert_head(
                 get_random_string(),

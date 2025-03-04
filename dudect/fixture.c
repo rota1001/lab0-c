@@ -68,7 +68,7 @@ static void update_statistics(const int64_t *exec_times,
                               uint8_t *classes,
                               int64_t percentiles)
 {
-    for (size_t i = 0; i < N_MEASURES; i++) {
+    for (size_t i = DROP_SIZE; i < N_MEASURES - DROP_SIZE; i++) {
         int64_t difference = exec_times[i];
         /* CPU cycle counter overflowed or dropped measurement */
         if (difference <= 0)
@@ -88,7 +88,7 @@ int cmp(const void *x, const void *y)
 void prepare_percentiles(int64_t *p, int64_t *exec_times, uint8_t *classes)
 {
     int64_t tmp[N_MEASURES], cnt = 0;
-    for (int i = 0; i < N_MEASURES; i++)
+    for (int i = DROP_SIZE; i < N_MEASURES - DROP_SIZE; i++)
         if (classes[i] && (tmp[cnt++] = exec_times[i]))
             ;
     qsort(tmp, cnt, sizeof(int64_t), cmp);
